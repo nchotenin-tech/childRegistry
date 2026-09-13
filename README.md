@@ -119,3 +119,5 @@ Dashboard เพิ่มไอคอนขึ้น/ลง/คงผลดี/�
 คู่มือครบ: [USER_MANUAL_TH.html](USER_MANUAL_TH.html) หรือ [USER_MANUAL_TH.md](USER_MANUAL_TH.md)
 
 สำหรับผู้พัฒนา: ติดตั้ง requirements-lock.txt แล้วรัน packaging/build.ps1 บน Windows โดยมี Inno Setup ตาม workflow ตัว build มีการทดสอบเปิด exe และไม่นำ ICU ของ Poppler มารวมกับ Qt
+
+คู่มือแยกด้านการติดตามและวิเคราะห์: [DASHBOARD_MANUAL_TH.md](DASHBOARD_MANUAL_TH.md) และ [ฉบับเปิดอ่าน/พิมพ์](DASHBOARD_MANUAL_TH.html)
