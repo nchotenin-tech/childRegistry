@@ -156,7 +156,7 @@ class Window(QMainWindow):
     def open_database(self):
         if not self.discard_ok():
             return
-        path, _ = QFileDialog.getOpenFileName(self, 'ตั้งค่าแหล่งข้อมูล Excel', str(self.registry.path if self.registry else ROOT), 'Excel (*.xlsx)')
+        path, _ = QFileDialog.getOpenFileName(self, 'ตั้งค่าแหล่งข้อมูล Excel', str(self.registry.path if self.registry else ROOT), 'Excel (*.xlsx *.xlsm)')
         if path and self.set_database(path):
             QSettings('StudentOralRegistry', 'Desktop').setValue('data_source', str(self.registry.path))
 

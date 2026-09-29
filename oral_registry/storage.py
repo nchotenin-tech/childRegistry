@@ -25,7 +25,7 @@ class Registry:
 
     def reload(self):
         self.version = fingerprint(self.path)
-        self.book = openpyxl.load_workbook(self.path)
+        self.book = openpyxl.load_workbook(self.path, keep_vba=self.path.suffix.lower() == '.xlsm')
         for name in ('Records', 'Codebook', 'ตารางRiskScore', 'Entry'):
             if name not in self.book:
                 raise ValueError(f'ไม่พบ Sheet {name}')
@@ -78,7 +78,7 @@ class Registry:
             if matches and not allow_update:
                 raise ValueError('มี CID และรอบนี้แล้ว กรุณาค้นหาและโหลดรายการเพื่อแก้ไข')
             # Read a fresh copy so a failed write never mutates the in-memory database.
-            book = openpyxl.load_workbook(self.path)
+            book = openpyxl.load_workbook(self.path, keep_vba=self.path.suffix.lower() == '.xlsm')
             sheet = book['Records']
             occupied = [r for r in range(4, sheet.max_row + 1) if any(sheet.cell(r, c).value is not None for c in self.columns.values())]
             row = matches[0] if matches else max(occupied, default=3) + 1
@@ -110,11 +110,15 @@ class Registry:
             backups = self.path.parent / 'backups'
             backups.mkdir(exist_ok=True)
             stamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
-            backup = backups / f'{self.path.stem}_{stamp}.xlsx'
+            backup = backups / f'{self.path.stem}_{stamp}{self.path.suffix}'
             shutil.copy2(self.path, backup)
-            handle, temporary = tempfile.mkstemp(suffix='.xlsx', dir=self.path.parent)
+            handle, temporary = tempfile.mkstemp(suffix=self.path.suffix, dir=self.path.parent)
             os.close(handle)
-            book.save(temporary)
+            if self.path.suffix.lower() == '.xlsm':
+                from .xlsm import write_xlsm
+                write_xlsm(self.path, book, temporary)
+            else:
+                book.save(temporary)
             check = openpyxl.load_workbook(temporary, read_only=True)
             if check['Records'].cell(row, self.columns['cid']).value != record['cid']:
                 raise ValueError('ตรวจสอบข้อมูลหลังบันทึกไม่ผ่าน')
@@ -143,15 +147,19 @@ class Registry:
             matches = [r for r, d in self.records() if (str(d['cid']), d['round_id']) == (str(cid), round_id)]
             if len(matches) != 1:
                 raise ValueError('ไม่พบรายการที่ตรงกันเพียงรายการเดียว จึงไม่ลบข้อมูล')
-            book = openpyxl.load_workbook(self.path)
+            book = openpyxl.load_workbook(self.path, keep_vba=self.path.suffix.lower() == '.xlsm')
             book['Records'].delete_rows(matches[0])
             backups = self.path.parent / 'backups'
             backups.mkdir(exist_ok=True)
-            backup = backups / (self.path.stem + '_before_delete_' + datetime.now().strftime('%Y%m%d_%H%M%S_%f') + '.xlsx')
+            backup = backups / (self.path.stem + '_before_delete_' + datetime.now().strftime('%Y%m%d_%H%M%S_%f') + self.path.suffix)
             shutil.copy2(self.path, backup)
-            fd, temporary = tempfile.mkstemp(suffix='.xlsx', dir=self.path.parent)
+            fd, temporary = tempfile.mkstemp(suffix=self.path.suffix, dir=self.path.parent)
             os.close(fd)
-            book.save(temporary)
+            if self.path.suffix.lower() == '.xlsm':
+                from .xlsm import write_xlsm
+                write_xlsm(self.path, book, temporary)
+            else:
+                book.save(temporary)
             check = openpyxl.load_workbook(temporary, read_only=True)
             check.close()
             if fingerprint(self.path) != self.version:

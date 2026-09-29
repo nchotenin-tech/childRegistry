@@ -1,4 +1,4 @@
-#define AppVersion "1.0.0"
+#define AppVersion "1.0.1"
 [Setup]
 AppId={{BFE4EA2D-3797-42BC-A923-5AE32B031E57}
 AppName=ChildRegistry

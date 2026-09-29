@@ -17,3 +17,5 @@ installer-output/
 *.pdf
 manual-extracted.txt
 *.zip
+
+*.xlsm
